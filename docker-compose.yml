@@ -1,0 +1,38 @@
+php-fpm:
+  build: ./php56/
+  expose:
+    - "9000"
+  volumes:
+    - ./data/html/:/var/www/html/:rw
+    - ./conf/php/php.ini:/usr/local/etc/php/php.ini:ro
+    - ./conf/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf:rw
+    #- ./run/mysqld/:/var/run/mysqld/
+  links:
+    - mysql:mysql
+
+mysql:
+  image: mariadb:10.2
+  ports:
+    - "3306:3306"
+  volumes:
+    - ./data/mysql/:/var/lib/mysql/:rw
+    #- ./run/mysqld/:/var/run/mysqld/
+  environment:
+      MYSQL_DATABASE: test
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 112233
+      MYSQL_ROOT_PASSWORD: 112233
+
+nginx:
+  image: nginx:alpine
+  ports:
+    - "80:80"
+    - "443:443"
+  volumes:
+    - ./data/html/:/var/www/html/:rw
+    - ./conf/nginx/conf.d:/etc/nginx/conf.d/:ro
+    - ./conf/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    - ./log/nginx/:/var/log/nginx/:rw
+  links:
+    - php-fpm:fpm
+
